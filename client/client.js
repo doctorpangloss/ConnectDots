@@ -60,7 +60,7 @@ Template.board.helpers({
 
             if (player.userId === userId) {
                 player.fill = '#03FF21';
-                player.stroke = '#210340';
+                player.stroke = '#03FF21';
             } else {
                 player.fill = '#034021';
                 player.stroke = '#000000';
