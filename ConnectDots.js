@@ -130,7 +130,7 @@ Sanitaire.resetPositionsInGame = function (gameId) {
     Players.find({gameId: gameId}).forEach(function (player) {
         Players.update(player._id, {
             $set: {
-                location: Sanitaire.getRandomLocationOnBoard({gameId: gameId, distance: 20})
+                location: Sanitaire.getRandomLocationOnBoard({gameId: gameId, distance: 30})
             }
         });
     });
