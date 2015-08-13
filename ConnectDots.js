@@ -192,7 +192,7 @@ Sanitaire.createGame = function (ownerUserId) {
         userIds: [],
         playerIds: [],
         playerCount: 0,
-        minimumPlayersToStartCount: 5,
+        minimumPlayersToStartCount: 7,
         // Last for 45 seconds
         duration: duration,
         patientZero: {
