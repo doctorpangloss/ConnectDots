@@ -5,6 +5,112 @@ Sanitaire = {};
 Sanitaire.boardWidth = 100;
 Sanitaire.boardHeight = 100;
 
+/**
+ * Is the given point inside the given polygon
+ * @param point {[Number]} Point
+ * @param polygon {[[Number]]} Polygon point list
+ * @returns {boolean}
+ */
+Sanitaire._pointInsidePolygon = function (point, polygon) {
+    // ray-casting algorithm based on
+    // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+
+    var x = point[0], y = point[1];
+
+    var inside = false;
+    for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        var xi = polygon[i][0], yi = polygon[i][1];
+        var xj = polygon[j][0], yj = polygon[j][1];
+
+        var intersect = ((yi > y) != (yj > y))
+            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+    }
+
+    return inside;
+};
+
+Sanitaire._patientZeroInsidePlayers = function (patientZeroLocation, players) {
+    return Sanitaire._pointInsidePolygon([patientZeroLocation.x, patientZeroLocation.y], _.map(players, function (player) {
+        return [player.location.x, player.location.y];
+    }));
+};
+
+Sanitaire.isPatientZeroInCordon = function (gameId) {
+    var game = Games.findOne(gameId, {fields: {patientZero: 1}});
+    if (!game) {
+        return;
+    }
+
+    var players = Players.find({gameId: gameId}, {
+        fields: {
+            location: 1,
+            connectedToPlayerId: 1,
+            _id: 1
+        }
+    }).fetch();
+
+    var playerPolygons = Sanitaire._findPolygonPlayers(players);
+
+    return _.any(playerPolygons, function (polygon) {
+        return Sanitaire._patientZeroInsidePlayers(game.patientZero.location, polygon)
+    });
+};
+
+/**
+ * Given a list of players, return arrays of polygons that they form.
+ * @param players
+ */
+Sanitaire._findPolygonPlayers = function (players) {
+    var playersById = _.indexBy(players, '_id');
+    // Convert to vertices for Tarjan's algorithm
+    var verticies = _.map(players, function (player) {
+        return new Vertex(player._id);
+    });
+
+    var verticiesByName = _.indexBy(verticies, 'name');
+
+    // Add connections
+    _.each(verticies, function (vertex) {
+        var connectedToPlayerId = playersById[vertex.name].connectedToPlayerId;
+        if (connectedToPlayerId) {
+            vertex.connections.push(verticiesByName[connectedToPlayerId]);
+        }
+    });
+
+    // Create a graph representing the player polygons
+    var graph = new Graph(verticies);
+
+    // Create the Tarjan's algorithm state
+    var tarjan = new Tarjan(graph);
+
+    tarjan.run();
+    // Get the polygons
+    var polygons = tarjan.scc;
+    // Get the polygons (polys greater than 3 length of unique items) in terms of players
+    return _.map(_.filter(polygons, function (polygon) {
+        return polygon.length >= 3;
+    }), function (polygon) {
+        return _.map(polygon, function (vertex) {
+            return playersById[vertex.name];
+        });
+    });
+};
+
+/**
+ * Reset positions for a given gameId
+ * @param gameId
+ */
+Sanitaire.resetPositionsInGame = function (gameId) {
+    Players.find({gameId: gameId}).forEach(function (player) {
+        Players.update(player._id, {
+            $set: {
+                location: Sanitaire.getRandomLocationOnBoard({gameId: gameId, distance: 20})
+            }
+        });
+    });
+};
+
 Sanitaire.getRandomLocationOnBoard = function (options) {
     options = _.extend({
         gameId: null,
@@ -59,6 +165,12 @@ Sanitaire.createGame = function (ownerUserId) {
 };
 
 Sanitaire.joinGame = function (gameId, userId) {
+    if (Games.find(gameId).count() === 0) {
+        if (Meteor.isClient) {
+            return;
+        }
+        throw new Meteor.Error(504, 'No game found.');
+    }
     // Create a player record, which contains information about their dot
     var existingPlayer = Players.findOne({gameId: gameId, userId: userId});
     if (existingPlayer) {

@@ -7,15 +7,15 @@ Accounts.ui.config({
     passwordSignupFields: 'USERNAME_ONLY'
 });
 
-//Meteor.startup(function () {
-//    // Create a guest account on startup if we're not logged in yet
-//    if (!Meteor.userId()) {
-//        Accounts.createUser({
-//            username: 'Guest ' + Random.id(),
-//            password: Random.id()
-//        });
-//    }
-//});
+Meteor.startup(function () {
+    // Create a guest account on startup if we're not logged in yet
+    if (!Meteor.userId()) {
+        Accounts.createUser({
+            username: 'Guest ' + Random.id(),
+            password: Random.id()
+        });
+    }
+});
 
 // When we close the window, make sure to quit the game
 $(window).bind("beforeunload", function () {
@@ -92,5 +92,11 @@ Template.games.helpers({
 Template.games.events({
     'click [data-action="new-game"]': function () {
         Meteor.call('createGame');
+    }
+});
+
+Template.game.helpers({
+    isPatientZeroInCordon: function () {
+        return Sanitaire.isPatientZeroInCordon(this.gameId);
     }
 });
