@@ -149,8 +149,8 @@ Sanitaire.getRandomLocationOnBoard = function (options) {
     if (options.gameId) {
         // Get all the current locations if a game ID was specified
         var patientZeroLocation = Games.findOne(options.gameId).patientZero.location;
-        currentLocations = [patientZeroLocation]
-            .concat(_.pluck(Players.find({gameId: options.gameId}, {fields: {location: 1}}).fetch(), 'location'));
+        currentLocations = _.compact([patientZeroLocation]
+            .concat(_.pluck(Players.find({gameId: options.gameId}, {fields: {location: 1}}).fetch(), 'location')));
     }
 
     // Generate a random point until one is found at least distance away from all other locations
@@ -232,7 +232,7 @@ Sanitaire.startGame = function (gameId) {
     var game = Games.findOne(gameId, {fields: {duration: 1}});
     Meteor.setTimeout(function () {
         Sanitaire.endGame(gameId);
-    }, now + game.duration);
+    }, game.duration);
 
     return Games.update({_id: gameId, state: Sanitaire.gameStates.LOBBY}, {
         $set: {
