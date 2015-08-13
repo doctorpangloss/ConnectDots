@@ -10,3 +10,7 @@ insecure
 accounts-password
 doctorpangloss:admin
 accounts-ui
+iron:router
+random
+abhiaiyer:meteor-twilio
+zimme:iron-router-auth

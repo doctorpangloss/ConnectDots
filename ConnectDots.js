@@ -2,8 +2,8 @@ Games = new Mongo.Collection('games');
 Players = new Mongo.Collection('players');
 Sanitaire = {};
 
-Sanitaire.boardWidth = 320;
-Sanitaire.boardHeight = 568;
+Sanitaire.boardWidth = 100;
+Sanitaire.boardHeight = 100;
 
 Sanitaire.getRandomLocationOnBoard = function (options) {
     options = _.extend({
@@ -112,6 +112,7 @@ Meteor.methods({
         if (!this.userId) {
             throw new Meteor.Error(403, 'Permission denied.');
         }
+
         return Sanitaire.joinGame(gameId, this.userId);
     },
     connectToPlayer: function (destinationPlayerId) {
@@ -124,5 +125,59 @@ Meteor.methods({
         var gameId = destinationPlayer.gameId;
         var thisPlayer = Players.findOne({gameId: gameId, userId: this.userId});
         return Sanitaire.tryConnectPlayers(thisPlayer._id, destinationPlayer._id);
+    },
+    quitGame: function (gameId) {
+        if (!this.userId) {
+            throw new Meteor.Error(403, 'Permission denied.');
+        }
+
+        return Sanitaire.quitGame(gameId, this.userId);
+    }
+});
+
+Router.configure({
+    authenticate: 'login'
+});
+
+Router.route('/', {
+    name: 'index',
+    template: 'index'
+});
+
+Router.route('/games', {
+    name: 'games',
+    template: 'games'
+});
+
+Router.route('/login', {
+    name: 'login',
+    template: 'login',
+    action: function () {
+        var loggedIn = !!Meteor.userId();
+
+        if (loggedIn) {
+            var redirect = Session.get('iron-router-auth');
+            this.redirect(redirect.route, redirect.params, {replaceState: true});
+            return;
+        }
+
+        this.render();
+    }
+});
+
+Router.route('/games/:gameId', {
+    name: 'game',
+    template: 'game',
+    onBeforeAction: ['authenticate'],
+    data: function () {
+        return {gameId: this.params.gameId};
+    },
+    action: function () {
+        if (!this.joined) {
+            SanitaireClient.joinGame(this.params.gameId);
+            this.joined = true;
+        }
+
+        this.render();
     }
 });

@@ -1,0 +1,11 @@
+<template name="games">
+    {{> loginButtons}}
+    <ul>
+        {{#each games}}
+            <li><a href="{{pathFor 'game' gameId=_id}}">{{_id}} ({{playerCount}} playing)</a></li>
+        {{/each}}
+        {{#if currentUser}}
+            <li><a href="#" data-action="new-game">Create a new game</a></li>
+        {{/if}}
+    </ul>
+</template>
