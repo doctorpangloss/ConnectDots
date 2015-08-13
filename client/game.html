@@ -12,7 +12,8 @@
                 --}}
                 <a class="navbar-brand" href="#">
                     {{#if $eq game.state 0}}
-                        <p>Waiting for {{remainingPlayers}} more player{{#unless $eq remainingPlayers 1}}s{{/unless}}</p>
+                        <p>Waiting for {{remainingPlayers}} more player{{#unless $eq remainingPlayers 1}}
+                            s{{/unless}}</p>
                     {{/if}}
                     {{! In progress}}
                     {{#if $eq game.state 10}}
@@ -57,7 +58,29 @@
         {{#if $eq game.state 0}}
             <p>Waiting for game to start...</p>
 
-            <p>Game starts at {{game.startAt}}</p>
+            <h4>Notes</h4>
+
+            <p>Hi! This is a test of a playable prototype for Cordon Sanitaire, a game about Quarantine.Playable
+                prototypes are
+                just testing game mechanics — there’s no art, story, fancy interface.</p>
+
+            <p>In this test we are getting 20 or so people into a game with a collective goal: at the end of 45 seconds,
+                isolate
+                Patient Zero (RED CIRCLE) in a quarantine line.</p>
+
+            <p>You are the BRIGHT GREEN CIRCLE. Other players are DARK GREEN CIRCLES.</p>
+
+            <p>Together, you and the other players will try to draw a continuous line around Patient Zero. But at any
+                time, you
+                can only draw a line between yourself and one other player. The success of failure of the group will
+                depend
+                entirely on how you can coordinate your actions … without being able to communicate. You can change who
+                you
+                connect to at any time.</p>
+
+            <p>Patient Zero will move randomly, as Patient Zeroes do. You may have to adapt. And don’t trap anyone else
+                in the
+                quarantine with them. Game will last 45 seconds. Good luck to all of us...</p>
         {{/if}}
         {{! In progress}}
         {{#if $eq game.state 10}}
