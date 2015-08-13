@@ -7,14 +7,39 @@ Sanitaire.boardHeight = 100;
 
 Sanitaire.getRandomLocationOnBoard = function (options) {
     options = _.extend({
-        width: Sanitaire.boardWidth,
-        height: Sanitaire.boardHeight
+        gameId: null,
+        distance: 0,
+        width: Sanitaire.boardWidth - 30,
+        height: Sanitaire.boardHeight - 30,
+        anchor: {x: 15, y: 15}
     }, options);
 
-    return {
-        x: Math.random() * options.width,
-        y: Math.random() * options.height
+    var currentLocations = [];
+    if (options.gameId) {
+        // Get all the current locations if a game ID was specified
+        var patientZeroLocation = Games.findOne(options.gameId).patientZero.location;
+        currentLocations = [patientZeroLocation]
+            .concat(_.pluck(Players.find({gameId: options.gameId}, {fields: {location: 1}}).fetch(), 'location'));
     }
+
+    // Generate a random point until one is found at least distance away from all other locations
+    var pt;
+    for (var i = 0; i < 100; i++) {
+        pt = {
+            x: options.anchor.x + Math.random() * options.width,
+            y: options.anchor.y + Math.random() * options.height
+        };
+
+        var withinAnyPoints = _.any(currentLocations, function (currentLocation) {
+            return Math.sqrt(Math.pow(currentLocation.x - pt.x, 2) + Math.pow(currentLocation.y - pt.y, 2)) < options.distance;
+        });
+
+        if (!withinAnyPoints) {
+            break;
+        }
+    }
+
+    return pt;
 };
 
 Sanitaire.createGame = function (ownerUserId) {
@@ -46,7 +71,7 @@ Sanitaire.joinGame = function (gameId, userId) {
         userId: userId,
         // Assign the location to the player
         // TODO: Do player location assignment in a more sophisticated way
-        location: Sanitaire.getRandomLocationOnBoard(),
+        location: Sanitaire.getRandomLocationOnBoard({gameId: gameId, distance: 20}),
         createdAt: new Date(),
         // Am I connected to any player? If yes, draw the line
         connectedToPlayerId: null,
