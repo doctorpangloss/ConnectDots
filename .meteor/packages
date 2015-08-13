@@ -6,7 +6,6 @@
 
 meteor-platform
 autopublish
-insecure
 accounts-password
 doctorpangloss:admin
 iron:router
