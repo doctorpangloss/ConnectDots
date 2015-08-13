@@ -1,12 +1,24 @@
 <template name="game">
-    <p>
-        {{#if isPatientZeroInCordon}}
-            Patient Zero is in the cordon!
-        {{else}}
-            Patient Zero is on the loose!
-        {{/if}}
-    </p>
-
-    {{> board gameId=gameId}}
-
+    {{! Lobby}}
+    {{#if $eq game.state 0}}
+        <p>Game starts at {{game.startAt}}</p>
+    {{/if}}
+    {{! In progress}}
+    {{#if $eq game.state 10}}
+        <p>
+            Time remaining: {{timeRemaining}}
+        </p>
+        <p>
+            {{#if isPatientZeroInCordon}}
+                Patient Zero is in the cordon!
+            {{else}}
+                Patient Zero is on the loose!
+            {{/if}}
+        </p>
+        {{> board gameId=gameId}}
+    {{/if}}
+    {{! Ended}}
+    {{#if $eq game.state 20}}
+        <p>Game over</p>
+    {{/if}}
 </template>

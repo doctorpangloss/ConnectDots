@@ -14,3 +14,8 @@ iron:router
 random
 abhiaiyer:meteor-twilio
 zimme:iron-router-auth
+momentjs:moment
+percolate:migrations
+percolate:synced-cron
+raix:handlebar-helpers
+velocityjs:velocityjs

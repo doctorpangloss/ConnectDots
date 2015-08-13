@@ -61,7 +61,7 @@ Sanitaire.isPatientZeroInCordon = function (gameId) {
  * Given a list of players, return arrays of polygons that they form.
  * @param players
  */
-Sanitaire._findPolygonPlayers = function (players) {
+Sanitaire._findPolygonPlayers = _.memoize(function (players) {
     var playersById = _.indexBy(players, '_id');
     // Convert to vertices for Tarjan's algorithm
     var verticies = _.map(players, function (player) {
@@ -95,7 +95,21 @@ Sanitaire._findPolygonPlayers = function (players) {
             return playersById[vertex.name];
         });
     });
-};
+}, function (players) {
+    // Return the sorted edge list as the hash function
+    var hash = '';
+
+    if (players.length === 0) {
+        return hash;
+    }
+
+    for (var i = 0, n = players.length; i < n; i++) {
+        var player = players[i];
+        hash += player._id + ':' + player.connectedToPlayerId + '/';
+    }
+
+    return hash;
+});
 
 /**
  * Reset positions for a given gameId
@@ -148,18 +162,75 @@ Sanitaire.getRandomLocationOnBoard = function (options) {
     return pt;
 };
 
+Sanitaire.gameStates = {
+    LOBBY: 0,
+    IN_PROGRESS: 10,
+    ENDED: 20
+};
+
 Sanitaire.createGame = function (ownerUserId) {
     // Create a game to join into
-    return Games.insert({
+    var now = new Date();
+    var startAt = moment().add(10, 'seconds').toDate();
+    var duration = 45 * 1000;
+    var gameId = Games.insert({
         ownerId: ownerUserId,
-        createdAt: new Date(),
+        state: Sanitaire.gameStates.LOBBY,
+        createdAt: now,
+        startAt: startAt,
         userIds: [],
         playerIds: [],
         playerCount: 0,
+        // Last for 45 seconds
+        duration: duration,
         patientZero: {
             // Assign a location to patient zero
-            // TODO: Do patient zero location assignment in a more sophisticated way
+            startLocation: Sanitaire.getRandomLocationOnBoard(),
+            endLocation: Sanitaire.getRandomLocationOnBoard(),
             location: Sanitaire.getRandomLocationOnBoard()
+        }
+    });
+
+    if (Meteor.isServer) {
+        var startDelay = Number(startAt) - Number(now);
+        Meteor.setTimeout(function () {
+            Sanitaire.startGame(gameId);
+        }, startDelay);
+        Meteor.setTimeout(function () {
+            Sanitaire.endGame(gameId);
+        }, startDelay + duration);
+    }
+
+    /*
+     // Schedule to start the game
+     SyncedCron.add({
+     name: 'Start game ' + gameId,
+     schedule: function (parser) {
+     return parser.text('at ' + startAt.toISOString());
+     },
+     job: function (intendedAt) {
+     console.log('Starting game ' + gameId);
+     Sanitaire.startGame(gameId);
+     }
+     });
+     */
+    return gameId;
+};
+
+Sanitaire.startGame = function (gameId) {
+    var now = new Date();
+    return Games.update({_id: gameId, state: Sanitaire.gameStates.LOBBY}, {
+        $set: {
+            startAt: now,
+            state: Sanitaire.gameStates.IN_PROGRESS
+        }
+    });
+};
+
+Sanitaire.endGame = function (gameId) {
+    return Games.update({_id: gameId, state: Sanitaire.gameStates.IN_PROGRESS}, {
+        $set: {
+            state: Sanitaire.gameStates.ENDED
         }
     });
 };
