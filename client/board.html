@@ -3,11 +3,14 @@
         <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 {{boardWidth}} {{boardHeight}}" enable-background="new 0 0 {{boardWidth}} {{boardHeight}}" xml:space="preserve">
             <circle id="patient-zero" fill="#D01300" stroke="#000000" stroke-miterlimit="10" cx="0" cy="0" r="3"/>
+            {{! Circles will come after lines to prevent issues with clicking}}
             {{#each players}}
-                <circle data-action="connect" fill="{{fill}}" stroke="#000000" stroke-miterlimit="10" cx="{{location.x}}" cy="{{location.y}}" r="3"/>
                 {{#if connectedToPlayerId}}
                     <line fill="none" stroke="{{stroke}}" stroke-width="1" stroke-miterlimit="10" x1="{{location.x}}" y1="{{location.y}}" x2="{{connectedPlayer.location.x}}" y2="{{connectedPlayer.location.y}}"/>
                 {{/if}}
+            {{/each}}
+            {{#each players}}
+                <circle data-action="connect" fill="{{fill}}" stroke="#000000" stroke-miterlimit="10" cx="{{location.x}}" cy="{{location.y}}" r="3"/>
             {{/each}}
         </svg>
     </div>
