@@ -19,3 +19,4 @@ percolate:migrations
 percolate:synced-cron
 raix:handlebar-helpers
 velocityjs:velocityjs
+twbs:bootstrap

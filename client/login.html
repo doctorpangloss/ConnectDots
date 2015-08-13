@@ -1,20 +1,24 @@
 <template name="login">
-    <p>Hi! This is a test of a playable prototype for Cordon Sanitaire, a game about Quarantine.Playable prototypes are
-        just testing game mechanics — there’s no art, story, fancy interface.</p>
+    <div class="container">
+        <h3>CREATE A USER TO BEGIN</h3>
+        {{> loginButtons}}
 
-    <p>In this test we are getting 20 or so people into a game with a collective goal: at the end of 45 seconds, isolate
-        Patient Zero (RED CIRCLE) in a quarantine line.</p>
+        <p>Hi! This is a test of a playable prototype for Cordon Sanitaire, a game about Quarantine.Playable prototypes are
+            just testing game mechanics — there’s no art, story, fancy interface.</p>
 
-    <p>You are the BRIGHT GREEN CIRCLE. Other players are DARK GREEN CIRCLES.</p>
+        <p>In this test we are getting 20 or so people into a game with a collective goal: at the end of 45 seconds, isolate
+            Patient Zero (RED CIRCLE) in a quarantine line.</p>
 
-    <p>Together, you and the other players will try to draw a continuous line around Patient Zero. But at any time, you
-        can only draw a line between yourself and one other player. The success of failure of the group will depend
-        entirely on how you can coordinate your actions … without being able to communicate. You can change who you
-        connect to at any time.</p>
+        <p>You are the BRIGHT GREEN CIRCLE. Other players are DARK GREEN CIRCLES.</p>
 
-    <p>Patient Zero will move randomly, as Patient Zeroes do. You may have to adapt. And don’t trap anyone else in the
-        quarantine with them. Game will last 45 seconds. Good luck to all of us...</p>
+        <p>Together, you and the other players will try to draw a continuous line around Patient Zero. But at any time, you
+            can only draw a line between yourself and one other player. The success of failure of the group will depend
+            entirely on how you can coordinate your actions … without being able to communicate. You can change who you
+            connect to at any time.</p>
 
-    <h3>CREATE A USER TO BEGIN</h3>
-    {{> loginButtons}}
+        <p>Patient Zero will move randomly, as Patient Zeroes do. You may have to adapt. And don’t trap anyone else in the
+            quarantine with them. Game will last 45 seconds. Good luck to all of us...</p>
+
+    </div>
+
 </template>
