@@ -182,7 +182,7 @@ Sanitaire.gameStates = {
 Sanitaire.createGame = function (ownerUserId) {
     // Create a game to join into
     var now = new Date();
-    var startAt = moment().add(10, 'seconds').toDate();
+    var startAt = moment().add(2, 'minutes').toDate();
     var duration = 45 * 1000;
     var gameId = Games.insert({
         ownerId: ownerUserId,
@@ -197,8 +197,7 @@ Sanitaire.createGame = function (ownerUserId) {
         patientZero: {
             // Assign a location to patient zero
             startLocation: Sanitaire.getRandomLocationOnBoard(),
-            endLocation: Sanitaire.getRandomLocationOnBoard(),
-            location: Sanitaire.getRandomLocationOnBoard()
+            endLocation: Sanitaire.getRandomLocationOnBoard()
         }
     });
 
