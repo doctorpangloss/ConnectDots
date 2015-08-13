@@ -1,6 +1,7 @@
 <template name="game">
     {{! Lobby}}
     {{#if $eq game.state 0}}
+        <p>Waiting for game to start...</p>
         <p>Game starts at {{game.startAt}}</p>
     {{/if}}
     {{! In progress}}
@@ -19,6 +20,6 @@
     {{/if}}
     {{! Ended}}
     {{#if $eq game.state 20}}
-        <p>Game over</p>
+        <p>Game over!</p>
     {{/if}}
 </template>
