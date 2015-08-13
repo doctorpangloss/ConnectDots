@@ -12,7 +12,7 @@
                 --}}
                 <a class="navbar-brand" href="#">
                     {{#if $eq game.state 0}}
-                        <p>Game starts at {{game.startAt}}</p>
+                        <p>Waiting for {{remainingPlayers}} more player{{#unless $eq remainingPlayers 1}}s{{/unless}}</p>
                     {{/if}}
                     {{! In progress}}
                     {{#if $eq game.state 10}}

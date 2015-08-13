@@ -121,6 +121,10 @@ Template.game.helpers({
     },
     game: function () {
         return Games.findOne(this.gameId);
+    },
+    remainingPlayers: function () {
+        var game = Games.findOne(this.gameId, {fields: {playerCount: 1}});
+        return 5 - game.playerCount;
     }
 });
 

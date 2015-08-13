@@ -201,16 +201,14 @@ Sanitaire.createGame = function (ownerUserId) {
         }
     });
 
-    if (Meteor.isServer) {
-        var startDelay = Number(startAt) - Number(now);
-        Meteor.setTimeout(function () {
-            Sanitaire.startGame(gameId);
-        }, startDelay);
-        Meteor.setTimeout(function () {
-            Sanitaire.endGame(gameId);
-        }, startDelay + duration);
-    }
-
+    /*
+     if (Meteor.isServer) {
+     var startDelay = Number(startAt) - Number(now);
+     Meteor.setTimeout(function () {
+     Sanitaire.startGame(gameId);
+     }, startDelay);
+     }
+     */
     /*
      // Schedule to start the game
      SyncedCron.add({
@@ -229,6 +227,13 @@ Sanitaire.createGame = function (ownerUserId) {
 
 Sanitaire.startGame = function (gameId) {
     var now = new Date();
+
+    // Set the game to end automatically after a certain amount of time
+    var game = Games.findOne(gameId, {fields: {duration: 1}});
+    Meteor.setTimeout(function () {
+        Sanitaire.endGame(gameId);
+    }, now + game.duration);
+
     return Games.update({_id: gameId, state: Sanitaire.gameStates.LOBBY}, {
         $set: {
             startAt: now,
@@ -281,6 +286,12 @@ Sanitaire.joinGame = function (gameId, userId) {
             playerCount: 1
         }
     });
+
+    // Are there enough players to start a game?
+    var game = Games.findOne(gameId);
+    if (game.playerCount >= 5) {
+        Sanitaire.startGame(gameId);
+    }
 
     return playerId;
 };
