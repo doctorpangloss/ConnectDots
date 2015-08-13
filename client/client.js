@@ -106,7 +106,9 @@ Meteor.setInterval(function () {
 
 Template.game.helpers({
     isPatientZeroInCordon: function () {
-        return Sanitaire.isPatientZeroInCordon(this.gameId);
+        timerDependency.depend();
+        var now = new Date();
+        return Sanitaire.isPatientZeroInCordon(this.gameId, now);
     },
     timeRemaining: function () {
         timerDependency.depend();
@@ -144,9 +146,7 @@ Template.game.onRendered(function () {
         // Get the patient zero element
         // Set its position to where it ought to be this moment
         var now = new Date();
-        var t = Math.max(Math.min((Number(now) - Number(game.startAt)) / game.duration, 1), 0);
-        var currentX = lerp(game.patientZero.startLocation.x, game.patientZero.endLocation.x, t);
-        var currentY = lerp(game.patientZero.startLocation.y, game.patientZero.endLocation.y, t);
+        var location = Sanitaire.getCurrentPatientZeroLocation(game, now);
 
         var duration = Math.max(Number(game.startAt) + game.duration - Number(now), 0);
         // If we're not in progress mode return
@@ -157,8 +157,8 @@ Template.game.onRendered(function () {
         Tracker.afterFlush(function () {
             var patientZeroElement = $('#patient-zero');
 
-            patientZeroElement.attr('cx', currentX);
-            patientZeroElement.attr('cy', currentY);
+            patientZeroElement.attr('cx', location.x);
+            patientZeroElement.attr('cy', location.y);
             // Set up its animation
             patientZeroElement.velocity('stop').velocity({
                 properties: {cx: game.patientZero.endLocation.x, cy: game.patientZero.endLocation.y},

@@ -36,11 +36,22 @@ Sanitaire._patientZeroInsidePlayers = function (patientZeroLocation, players) {
     }));
 };
 
-Sanitaire.isPatientZeroInCordon = function (gameId) {
-    var game = Games.findOne(gameId, {fields: {patientZero: 1}});
+Sanitaire.getCurrentPatientZeroLocation = function (game, time) {
+    time = time || new Date();
+    var t = Math.max(Math.min((Number(time) - Number(game.startAt)) / game.duration, 1), 0);
+    var currentX = lerp(game.patientZero.startLocation.x, game.patientZero.endLocation.x, t);
+    var currentY = lerp(game.patientZero.startLocation.y, game.patientZero.endLocation.y, t);
+    return {x: currentX, y: currentY, t: t};
+};
+
+Sanitaire.isPatientZeroInCordon = function (gameId, time) {
+    time = time || new Date();
+    var game = Games.findOne(gameId, {fields: {patientZero: 1, startAt: 1, duration: 1}});
     if (!game) {
         return;
     }
+
+    var location = Sanitaire.getCurrentPatientZeroLocation(game, time);
 
     var players = Players.find({gameId: gameId}, {
         fields: {
@@ -53,7 +64,7 @@ Sanitaire.isPatientZeroInCordon = function (gameId) {
     var playerPolygons = Sanitaire._findPolygonPlayers(players);
 
     return _.any(playerPolygons, function (polygon) {
-        return Sanitaire._patientZeroInsidePlayers(game.patientZero.location, polygon)
+        return Sanitaire._patientZeroInsidePlayers(location, polygon)
     });
 };
 
