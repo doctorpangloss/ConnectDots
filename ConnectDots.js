@@ -197,8 +197,8 @@ Sanitaire.createGame = function (ownerUserId) {
         duration: duration,
         patientZero: {
             // Assign a location to patient zero
-            startLocation: Sanitaire.getRandomLocationOnBoard(),
-            endLocation: Sanitaire.getRandomLocationOnBoard()
+            startLocation: {x: 20, y: 20}, // Sanitaire.getRandomLocationOnBoard(),
+            endLocation: {x: 80, y: 80} // Sanitaire.getRandomLocationOnBoard()
         }
     });
 
