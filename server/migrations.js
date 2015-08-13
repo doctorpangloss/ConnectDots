@@ -28,7 +28,15 @@ Migrations.add({
     }
 });
 
-Version = 2;
+Migrations.add({
+    name: 'Minimum players to start',
+    version: 3,
+    up: function () {
+        Games.update({minimumPlayersToStartCount: {$exists: false}}, {$set: {minimumPlayersToStartCount: 5}}, {multi: true});
+    }
+});
+
+Version = 3;
 
 Meteor.startup(function () {
     if (!Migrations._collection.findOne('control')

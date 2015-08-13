@@ -123,8 +123,8 @@ Template.game.helpers({
         return Games.findOne(this.gameId);
     },
     remainingPlayers: function () {
-        var game = Games.findOne(this.gameId, {fields: {playerCount: 1}});
-        return 5 - game.playerCount;
+        var game = Games.findOne(this.gameId, {fields: {playerCount: 1, minimumPlayersToStartCount: 1}});
+        return game.minimumPlayersToStartCount - game.playerCount;
     }
 });
 

@@ -192,6 +192,7 @@ Sanitaire.createGame = function (ownerUserId) {
         userIds: [],
         playerIds: [],
         playerCount: 0,
+        minimumPlayersToStartCount: 5,
         // Last for 45 seconds
         duration: duration,
         patientZero: {
@@ -289,7 +290,7 @@ Sanitaire.joinGame = function (gameId, userId) {
 
     // Are there enough players to start a game?
     var game = Games.findOne(gameId);
-    if (game.playerCount >= 5) {
+    if (game.playerCount >= game.minimumPlayersToStartCount) {
         Sanitaire.startGame(gameId);
     }
 
