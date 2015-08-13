@@ -2,6 +2,21 @@ Games = new Mongo.Collection('games');
 Players = new Mongo.Collection('players');
 Sanitaire = {};
 
+Sanitaire.boardWidth = 320;
+Sanitaire.boardHeight = 568;
+
+Sanitaire.getRandomLocationOnBoard = function (options) {
+    options = _.extend({
+        width: Sanitaire.boardWidth,
+        height: Sanitaire.boardHeight
+    }, options);
+
+    return {
+        x: Math.random() * options.width,
+        y: Math.random() * options.height
+    }
+};
+
 Sanitaire.createGame = function (ownerUserId) {
     // Create a game to join into
     return Games.insert({
@@ -9,39 +24,70 @@ Sanitaire.createGame = function (ownerUserId) {
         createdAt: new Date(),
         userIds: [],
         playerIds: [],
+        playerCount: 0,
         patientZero: {
             // Assign a location to patient zero
             // TODO: Do patient zero location assignment in a more sophisticated way
-            location: {
-                x: Math.random(),
-                y: Math.random()
-            }
+            location: Sanitaire.getRandomLocationOnBoard()
         }
     });
 };
 
 Sanitaire.joinGame = function (gameId, userId) {
     // Create a player record, which contains information about their dot
-    if (Players.find({gameId: gameId, userId: userId}).count() > 0) {
-        return;
+    var existingPlayer = Players.findOne({gameId: gameId, userId: userId});
+    if (existingPlayer) {
+        return existingPlayer._id;
     }
 
     // Create a new player record
-    return Players.insert({
+    var playerId = Players.insert({
         gameId: gameId,
         userId: userId,
         // Assign the location to the player
         // TODO: Do player location assignment in a more sophisticated way
-        location: {
-            x: Math.random(),
-            y: Math.random()
-        },
+        location: Sanitaire.getRandomLocationOnBoard(),
         createdAt: new Date(),
         // Am I connected to any player? If yes, draw the line
         connectedToPlayerId: null,
         // How many connection attempts do I have remaining?
-        connectionsRemainingCount: 5
+        connectionsRemainingCount: 9999
     });
+
+    Games.update(gameId, {
+        $addToSet: {
+            playerIds: playerId,
+            userIds: userId
+        },
+        $inc: {
+            playerCount: 1
+        }
+    });
+
+    return playerId;
+};
+
+Sanitaire.quitGame = function (gameId, userId) {
+    var player = Players.findOne({gameId: gameId, userId: userId});
+    if (!player) {
+        throw new Meteor.Error(500, 'Cannot quit a game you haven\'t joined.');
+    }
+
+    Games.update(gameId, {
+        $pull: {
+            playerIds: player._id,
+            userIds: userId
+        },
+        $inc: {
+            playerCount: -1
+        }
+    });
+
+    // Disconnect everyone connected to this player
+    Players.update({gameId: gameId, connectedToPlayerId: player._id}, {$set: {connectedToPlayerId: null}});
+
+    // Remove this player
+    Players.remove(player._id);
 };
 
 Sanitaire.tryConnectPlayers = function (originPlayerId, destinationPlayerId) {
@@ -55,12 +101,8 @@ Sanitaire.tryConnectPlayers = function (originPlayerId, destinationPlayerId) {
     });
 };
 
-Accounts.onCreateUser(function () {
-
-});
-
 Meteor.methods({
-    createdGame: function () {
+    createGame: function () {
         if (!this.userId) {
             throw new Meteor.Error(403, 'Permission denied.');
         }
